@@ -1,0 +1,4 @@
+sku,descricao,categoria,estoque_minimo,lead_time_dias,unidade
+ABC-100,Monitor LED 24,Eletronicos,5,10,UN
+XYZ-200,Cadeira Ergonomica,Moveis,2,14,UN
+DEF-300,Teclado Mecanico,Perifericos,8,5,UN
