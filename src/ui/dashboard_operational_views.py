@@ -89,8 +89,14 @@ CARD_STYLE = """
         background: rgba(100, 116, 139, 0.22);
         color: #cbd5e1;
     }
+    [data-testid="stPlotlyChart"] {
+        margin-bottom: 0.25rem;
+    }
 </style>
 """
+
+CHART_HEIGHT = 300
+MAX_HORIZONTAL_BARS = 8
 
 
 def _to_date_range(periodo, fallback_start: dt.date, fallback_end: dt.date):
@@ -163,7 +169,7 @@ def _plot_line(df: pd.DataFrame, title: str, y_label: str, color: str):
     fig.update_layout(
         title=title,
         margin=dict(l=0, r=0, t=42, b=0),
-        height=300,
+        height=CHART_HEIGHT,
         xaxis_title=None,
         yaxis_title=y_label,
     )
@@ -180,7 +186,7 @@ def _plot_bar(df: pd.DataFrame, title: str, x: str, y: str, y_label: str, color:
     fig.update_layout(
         title=title,
         margin=dict(l=0, r=0, t=42, b=0),
-        height=300,
+        height=CHART_HEIGHT,
         xaxis_title=None,
         yaxis_title=y_label,
     )
@@ -192,13 +198,25 @@ def _plot_horizontal_bar(df: pd.DataFrame, title: str, y: str, x: str, x_label: 
         st.info("Sem dados para exibir.")
         return
 
-    fig = px.bar(df, y=y, x=x, orientation="h", color_discrete_sequence=[color])
+    chart_df = df.nlargest(MAX_HORIZONTAL_BARS, x).copy()
+    chart_df[x] = pd.to_numeric(chart_df[x], errors="coerce").fillna(0.0)
+    if chart_df[x].max() <= 0:
+        st.info("Sem ocorrencias no periodo para este recorte (todos os valores estao em 0).")
+        st.dataframe(
+            chart_df[[y, x]].rename(columns={y: "Categoria", x: "Valor (%)"}),
+            use_container_width=True,
+            hide_index=True,
+        )
+        return
+
+    fig = px.bar(chart_df, y=y, x=x, orientation="h", color_discrete_sequence=[color])
     fig.update_layout(
         title=title,
         margin=dict(l=0, r=0, t=42, b=0),
-        height=max(300, 44 * len(df)),
+        height=CHART_HEIGHT,
         yaxis_title=None,
         xaxis_title=x_label,
+        yaxis=dict(categoryorder="total ascending"),
     )
     st.plotly_chart(fig, use_container_width=True, theme="streamlit")
 

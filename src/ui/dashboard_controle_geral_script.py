@@ -182,7 +182,6 @@ service = KPIService(db)
 all_categories = service.list_categorias()
 
 with st.sidebar:
-    st.markdown("---")
     st.markdown("### Filtros")
     selected_categories = st.multiselect(
         "Familias",
